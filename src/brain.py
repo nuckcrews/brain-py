@@ -21,8 +21,8 @@ class Brain:
     def setup(self, client_key: str):
         self._client.api_key = client_key
 
-    def chat(self, prompt):
-        return self._chat.send(prompt)
+    def chat(self, prompt, callback=None):
+        return self._chat.send(prompt, callback)
 
     def remember(self, memory):
         self._memory.add_memory(memory)

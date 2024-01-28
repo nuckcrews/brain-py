@@ -38,6 +38,20 @@ If you don’t have Python installed, [install it from here](https://www.python.
     ```bash
     $ ./cli.sh
     ```
+## Server
+
+1. Generate a secret key
+
+   ```bash
+   $ python -c 'import secrets; print(secrets.token_hex())'
+   ```
+   Once generated, set the `FLASK_APP_SECRET_KEY` in your `.env` as the new value.
+
+2. Run the application
+
+   ```bash
+   $ python server.py
+   ```
 
 ## Contributing
 

@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, send_from_directory, jsonify, render_template
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 
@@ -34,6 +34,11 @@ def favicon():
     )
 
 
+@app.route("/demo")
+def demo():
+    return render_template("demo.html")
+
+
 @app.errorhandler(AppError)
 def handle_bulsai_error(ex):
     response = jsonify(ex.error)
@@ -42,32 +47,70 @@ def handle_bulsai_error(ex):
 
 
 @socketio.on("connect")
-def connect(params: any):
-    openai_key = params.get("openai_key")
-    if not openai_key:
-        raise missing_param("openai_key is required")
-
-    brain.setup(openai_key)
-    print("connected")
+def connect():
+    emit("connect_client", {"data": "Connected"})
 
 
 @socketio.on("disconnect")
 def disconnect():
-    print("Client disconnected")
+    emit("disconnect_client", {"data": "Disconnected"})
+
+
+@socketio.on("setup")
+def setup(data):
+    client_key = data.get("client_key")
+    print("Setting up brain with client key: " + client_key)
+    if not client_key:
+        raise missing_param("client_key is required")
+    brain.setup(client_key)
+    emit("setup", {"data": "Brain setup complete"})
+
+
+@socketio.on("setup_demo")
+def setup_demo():
+    client_key = os.environ.get("OPENAI_API_KEY")
+    print("Setting up brain with client key: " + client_key)
+    if not client_key:
+        raise missing_param("client_key is required")
+    brain.setup(client_key)
+    emit("client_setup", {"data": "Brain setup complete"})
+
+
+@socketio.on("new_chat")
+def new_chat(data):
+    message = data.get("message")
+    emit("bot_chat_started")
+
+    def stream_chat(message_data):
+        emit("bot_chat", {"data": message_data})
+
+    brain.chat(message, stream_chat)
+
+    emit("bot_chat_ended", {"data": "New chat from bot"})
+
+
+@socketio.on("new_memory")
+def new_memory(data):
+    memory = data.get("memory")
+    brain.remember(memory)
+    emit("added_memory", {"data": "New memory added: " + memory})
 
 
 def serve_production():
     from waitress import serve
     import logging
-    logger = logging.getLogger('waitress')
+
+    logger = logging.getLogger("waitress")
     logger.setLevel(logging.INFO)
 
     print("Running in production mode")
     serve(app, host="0.0.0.0", port=8080)
 
+
 def serve_development():
     print("Running in development mode")
     socketio.run(app)
+
 
 if __name__ == "__main__":
     if os.environ.get("FLASK_ENVIRONMENT") == "production":

@@ -11,7 +11,7 @@ class ChatBot:
         self.memory = memory
         self.openai_client = openai_client
 
-    def send(self, prompt: str):
+    def send(self, prompt: str, callback=None):
         self.memory.add_chat(prompt)
         response = self.openai_client.chat.completions.create(model="gpt-4", messages=self.memory.context(), temperature=0.1, stream=True)
 
@@ -31,7 +31,11 @@ class ChatBot:
                 stripped = True
 
             completion_text += event_text
-            stream(event_text)
+            if callback:
+                callback(event_text)
+            else:
+                stream(event_text)
 
-        print()
+        if callback is None:
+            print()
         self.memory.add_bot_chat(completion_text)
