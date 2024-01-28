@@ -11,7 +11,7 @@ class Brain:
         client = OpenAI()
         client.api_key = os.getenv("OPENAI_API_KEY")
         self._memory = Memory(
-            "You are a highly intelligent brain. Respond to the user based on the content from the files anf websites your memory.",
+            "You are a highly intelligent brain. Respond to the user based on the content from the files and websites in your memory. Users can also add these resources to your memory.",
             client
         )
         self._chat = ChatBot(self._memory, client)

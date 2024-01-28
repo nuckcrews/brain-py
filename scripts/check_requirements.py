@@ -22,7 +22,7 @@ def check_requirements():
 
     missing_packages = required_packages - installed_packages
 
-    if missing_packages:
+    if missing_packages and len(missing_packages) > 0:
         print("Missing packages:")
         for package in missing_packages:
             print(f"  - {package}")
