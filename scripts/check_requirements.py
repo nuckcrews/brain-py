@@ -1,35 +1,39 @@
+import subprocess
 import sys
-import argparse
-import pkg_resources
 
+def get_installed_packages():
+    try:
+        result = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'], universal_newlines=True)
+        installed_packages = {line.strip().lower() for line in result.splitlines() if line.strip()}
+        return installed_packages
+    except subprocess.CalledProcessError:
+        print("Error retrieving installed packages.")
+        sys.exit(1)
 
-def parse_package_name(line):
-    """Parse package name from a line in the requirements file."""
-    return line.strip().split("#")[0].strip().split("==")[0]
+def check_requirements():
+    try:
+        with open('requirements.txt', 'r') as file:
+            required_packages = {line.strip().lower() for line in file.readlines() if line.strip()}
+    except FileNotFoundError:
+        print("Error: requirements.txt not found.")
+        sys.exit(1)
 
+    installed_packages = get_installed_packages()
 
-def main(requirements_file):
-    """Check if all required packages are installed."""
-    with open(requirements_file, "r") as f:
-        required_packages = [parse_package_name(line) for line in f.readlines()]
-
-    installed_packages = {package.key for package in pkg_resources.working_set}
-
-    missing_packages = [
-        package for package in required_packages
-        if package and package.lower() not in installed_packages
-    ]
+    missing_packages = required_packages - installed_packages
 
     if missing_packages:
         print("Missing packages:")
-        print(", ".join(missing_packages))
-        sys.exit(1)
+        for package in missing_packages:
+            print(f"  - {package}")
+        print("Installing missing packages...")
+        try:
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', *missing_packages])
+        except subprocess.CalledProcessError:
+            print("Error installing missing packages.")
+            sys.exit(1)
     else:
-        print("All packages are installed.")
-
+        print("All required packages are installed.")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Check if all required packages are installed.")
-    parser.add_argument("requirements_file", help="Path to the requirements file.")
-    args = parser.parse_args()
-    main(args.requirements_file)
+    check_requirements()
