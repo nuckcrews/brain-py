@@ -8,13 +8,18 @@ __all__ = ["Brain"]
 
 class Brain:
     def __init__(self):
-        client = OpenAI()
-        client.api_key = os.getenv("OPENAI_API_KEY")
+        self._client = OpenAI()
+        client_key = os.getenv("OPENAI_API_KEY")
+        if client_key:
+            self._client.api_key = os.getenv("OPENAI_API_KEY")
         self._memory = Memory(
             "You are a highly intelligent brain. Respond to the user based on the content from the files and websites in your memory. Users can also add these resources to your memory.",
-            client
+            self._client
         )
-        self._chat = ChatBot(self._memory, client)
+        self._chat = ChatBot(self._memory, self._client)
+
+    def setup(self, client_key: str):
+        self._client.api_key = client_key
 
     def chat(self, prompt):
         return self._chat.send(prompt)
