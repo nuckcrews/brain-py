@@ -23,7 +23,7 @@ class Extractor:
         if self.is_directory():
             return self.get_directory_content(path=self.base_path)
         else:
-            return self.extract_from_file(path=self.base_path)
+            return [self.extract_from_file(path=self.base_path)]
 
     def file_name(self, path) -> str:
         return os.path.basename(path)

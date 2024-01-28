@@ -1,6 +1,7 @@
 import sys
 import json
 import tiktoken
+import numpy as np
 from PyInquirer import prompt
 
 __all__ = [
@@ -118,3 +119,6 @@ def is_token_overflow(content: str, model="gpt-4"):
     else:
         max_tokens = 8000
     return num_tokens(content, model=model) > max_tokens
+
+def cosine_similarity(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))

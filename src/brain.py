@@ -20,7 +20,7 @@ class Brain:
         return self._chat.send(prompt)
 
     def remember(self, memory):
-        memory.add_memory(memory)
+        self._memory.add_memory(memory)
 
     def list_memories(self):
         return []

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from openai import OpenAI
 from .extract import Extractor, File
-from .utils import is_token_overflow
+from .utils import is_token_overflow, cosine_similarity
 
 __all__ = ["Memory"]
 
@@ -19,7 +19,7 @@ class Memory:
         memory_prompt = self._create_memory_prompt()
         files_paths = self._find_nearest_paths(memory_prompt)
         content = "\n\n-----\n".join(
-            [Extractor(path).extract().content for path in files_paths]
+            [Extractor(path).extract()[0].content for path in files_paths]
         )
         content_message = {"role": "user", "content": f"Content:\n\n{content}"}
 
@@ -68,7 +68,7 @@ class Memory:
             prompt_embedding = self.openai_client.embeddings.create(input=prompt, model="text-embedding-3-small").data[0].embedding
             df["embedding"] = df.embedding.apply(eval).apply(np.array)
             df["similarity"] = df.embedding.apply(
-                lambda x: self.openai_client.embeddings.cosine_similarity(x, prompt_embedding)
+                lambda x: cosine_similarity(x, prompt_embedding)
             )
             return df.sort_values("similarity", ascending=False).head(k).path.tolist()
         except FileNotFoundError:
