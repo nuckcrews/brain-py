@@ -5,6 +5,7 @@ from .utils import *
 
 __all__ = ["ChatBot"]
 
+
 class ChatBot:
     def __init__(self, memory: Memory):
         self.memory = memory
@@ -12,10 +13,7 @@ class ChatBot:
     def send(self, prompt: str):
         self.memory.add_chat(prompt)
         response = ChatCompletion.create(
-            model="gpt-4",
-            messages=self.memory.context(),
-            temperature=0.1,
-            stream=True
+            model="gpt-4", messages=self.memory.context(), temperature=0.1, stream=True
         )
 
         completion_text = ""

@@ -1,26 +1,25 @@
 import pandas as pd
 import numpy as np
-from openai import ChatCompletion, Completion
-from openai.embeddings_utils import get_embedding, cosine_similarity
+from openai import Completion, Embedding
 from .extract import Extractor, File
 from .utils import is_token_overflow
 
-__all__ = [
-    "Memory"
-]
+__all__ = ["Memory"]
 
 session_memory_path = ".memory/session.csv"
 
-class Memory():
 
+class Memory:
     def __init__(self, system_prompt):
-        self.system_message = { "role": "system", "content": system_prompt }
+        self.system_message = {"role": "system", "content": system_prompt}
         self.chat_messages = []
 
     def context(self):
         memory_prompt = self._create_memory_prompt()
         files_paths = self._find_nearest_paths(memory_prompt)
-        content = "\n\n-----\n".join([Extractor(path).extract().content for path in files_paths])
+        content = "\n\n-----\n".join(
+            [Extractor(path).extract().content for path in files_paths]
+        )
         content_message = {"role": "user", "content": f"Content:\n\n{content}"}
 
         new_context = [self.system_message, content_message, *self.chat_messages]
@@ -54,29 +53,25 @@ class Memory():
     def _embed(self, files: list[File]):
         embeddings = []
         for file in files:
-            embedding = get_embedding(
-                file.content,
-                engine="text-embedding-ada-002",
-                max_tokens=8000
+            embedding = Embedding.create(
+                input=file.content, engine="text-embedding-ada-002", max_tokens=8000
             )
-            embeddings.append({
-                "path": file.path,
-                "name": file.name,
-                "embedding": embedding
-            })
+            embeddings.append(
+                {"path": file.path, "name": file.name, "embedding": embedding}
+            )
 
         df = pd.DataFrame(embeddings, columns=["path", "name", "embedding"])
         df.to_csv(session_memory_path)
 
     def _find_nearest_paths(self, prompt: str, k: int = 4):
-        prompt_embedding = get_embedding(
-            prompt,
-            engine="text-embedding-ada-002",
-            max_tokens=8000
+        prompt_embedding = Embedding.create(
+            input=prompt, engine="text-embedding-ada-002", max_tokens=8000
         )
         df = pd.read_csv(session_memory_path)
         df["embedding"] = df.embedding.apply(eval).apply(np.array)
-        df["similarity"] = df.embedding.apply(lambda x: cosine_similarity(x, prompt_embedding))
+        df["similarity"] = df.embedding.apply(
+            lambda x: Embedding.cosine_similarity(x, prompt_embedding)
+        )
         return df.sort_values("similarity", ascending=False).head(k).path.tolist()
 
     def _remove_earliest_chat(self):
@@ -87,7 +82,7 @@ class Memory():
             model="text-curie-001",
             prompt=self._memory_context(),
             max_tokens=256,
-            temperature=0
+            temperature=0,
         )
 
         return response.choices[0].text.strip()
@@ -95,10 +90,7 @@ class Memory():
     def _memory_context(self):
         messages = [message["content"] for message in self.chat_messages[-5:]]
 
-        is_overflow = is_token_overflow(
-            "; ".join(messages),
-            model="gpt-3.5-turbo"
-        )
+        is_overflow = is_token_overflow("; ".join(messages), model="gpt-3.5-turbo")
         while is_overflow:
             messages.pop(0)
             is_overflow = is_token_overflow(

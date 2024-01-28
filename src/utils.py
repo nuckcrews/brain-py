@@ -18,15 +18,15 @@ __all__ = [
 
 def announce(message, prefix: str = ""):
     # Function to print a colored message
-    cyan = '\033[96m'
-    default = '\033[0m'
+    cyan = "\033[96m"
+    default = "\033[0m"
     print("{0}{1}{2}{3}".format(prefix, cyan, message, default))
 
 
 def stream(message, prefix: str = ""):
     # Function to print a colored message
-    cyan = '\033[96m'
-    default = '\033[0m'
+    cyan = "\033[96m"
+    default = "\033[0m"
     print("{0}{1}{2}{3}".format(prefix, cyan, message, default), end="")
     sys.stdout.flush()
 
@@ -36,12 +36,12 @@ def prompt_confirm(question_message, default=True):
 
     return prompt(
         {
-            'type': 'confirm',
-            'name': 'name',
-            'message': question_message,
-            'default': default
+            "type": "confirm",
+            "name": "name",
+            "message": question_message,
+            "default": default,
         }
-    ).get('name')
+    ).get("name")
 
 
 def prompt_string(question_message, default=None):
@@ -49,25 +49,25 @@ def prompt_string(question_message, default=None):
 
     return prompt(
         {
-            'type': 'input',
-            'name': 'name',
-            'message': question_message,
-            'default': default if default else ""
+            "type": "input",
+            "name": "name",
+            "message": question_message,
+            "default": default if default else "",
         }
-    ).get('name')
+    ).get("name")
 
 
 def prompt_list(question_message, choices, default=None):
     # Function to prompt a list selection question
     return prompt(
         {
-            'type': 'list',
-            'name': 'name',
-            'message': question_message,
-            'choices': choices,
-            'default': default
+            "type": "list",
+            "name": "name",
+            "message": question_message,
+            "choices": choices,
+            "default": default,
         }
-    ).get('name')
+    ).get("name")
 
 
 def llm_response(obj: any) -> str:
@@ -98,8 +98,10 @@ def llm_json(obj: any):
         # Return None if the required keys are not found or if the content is not valid JSON
         return None
 
+
 encoding_4 = tiktoken.encoding_for_model("gpt-4")
 encoding_3_5 = tiktoken.encoding_for_model("gpt-3.5-turbo")
+
 
 def num_tokens(content: str, model="gpt-4"):
     if model == "gpt-3.5-turbo":
