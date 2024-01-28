@@ -18,10 +18,10 @@ class ChatBot:
         completion_text = ""
         stripped = False
         for event in response:
-            delta = event.get("choices")[0].get("delta")
+            delta = event.choices[0].delta
             event_text = None
             if delta:
-                event_text = delta.get("content")
+                event_text = delta.content
 
             if not event_text:
                 continue
@@ -33,4 +33,5 @@ class ChatBot:
             completion_text += event_text
             stream(event_text)
 
+        print()
         self.memory.add_bot_chat(completion_text)

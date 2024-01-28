@@ -1,4 +1,4 @@
-"""GPT Engineer: Completes software engineering tasks for you"""
+"""Brain: Access to your brain."""
 import cli.app as app
 
 if __name__ == "__main__":

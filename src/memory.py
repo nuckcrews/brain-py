@@ -54,7 +54,7 @@ class Memory:
     def _embed(self, files: list[File]):
         embeddings = []
         for file in files:
-            embedding = self.openai_client.embeddings.create(input=file.content, engine="text-embedding-ada-002", max_tokens=8000)
+            embedding = self.openai_client.embeddings.create(input=file.content, model="text-embedding-3-small").data[0].embedding
             embeddings.append(
                 {"path": file.path, "name": file.name, "embedding": embedding}
             )
@@ -63,13 +63,18 @@ class Memory:
         df.to_csv(session_memory_path)
 
     def _find_nearest_paths(self, prompt: str, k: int = 4):
-        prompt_embedding = self.openai_client.embeddings.create(input=prompt, engine="text-embedding-ada-002", max_tokens=8000)
-        df = pd.read_csv(session_memory_path)
-        df["embedding"] = df.embedding.apply(eval).apply(np.array)
-        df["similarity"] = df.embedding.apply(
-            lambda x: self.openai_client.embeddings.cosine_similarity(x, prompt_embedding)
-        )
-        return df.sort_values("similarity", ascending=False).head(k).path.tolist()
+        try:
+            df = pd.read_csv(session_memory_path)
+            prompt_embedding = self.openai_client.embeddings.create(input=prompt, model="text-embedding-3-small").data[0].embedding
+            df["embedding"] = df.embedding.apply(eval).apply(np.array)
+            df["similarity"] = df.embedding.apply(
+                lambda x: self.openai_client.embeddings.cosine_similarity(x, prompt_embedding)
+            )
+            return df.sort_values("similarity", ascending=False).head(k).path.tolist()
+        except FileNotFoundError:
+            return []
+        except pd.errors.EmptyDataError:
+            return []
 
     def _remove_earliest_chat(self):
         self.chat_messages.pop(0)

@@ -27,4 +27,6 @@ tmp/
 .idea
 test.py
 
+.memory
+
 example.json
