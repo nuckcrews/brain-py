@@ -1,5 +1,5 @@
 import logging
-from openai import ChatCompletion
+from openai import OpenAI
 from .memory import Memory
 from .utils import *
 
@@ -7,14 +7,13 @@ __all__ = ["ChatBot"]
 
 
 class ChatBot:
-    def __init__(self, memory: Memory):
+    def __init__(self, memory: Memory, openai_client: OpenAI):
         self.memory = memory
+        self.openai_client = openai_client
 
     def send(self, prompt: str):
         self.memory.add_chat(prompt)
-        response = ChatCompletion.create(
-            model="gpt-4", messages=self.memory.context(), temperature=0.1, stream=True
-        )
+        response = self.openai_client.chat.completions.create(model="gpt-4", messages=self.memory.context(), temperature=0.1, stream=True)
 
         completion_text = ""
         stripped = False

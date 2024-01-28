@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from openai import Completion, Embedding
+from openai import OpenAI
 from .extract import Extractor, File
 from .utils import is_token_overflow
 
@@ -10,9 +10,10 @@ session_memory_path = ".memory/session.csv"
 
 
 class Memory:
-    def __init__(self, system_prompt):
+    def __init__(self, system_prompt: str, openai_client: OpenAI):
         self.system_message = {"role": "system", "content": system_prompt}
         self.chat_messages = []
+        self.openai_client = openai_client
 
     def context(self):
         memory_prompt = self._create_memory_prompt()
@@ -53,9 +54,7 @@ class Memory:
     def _embed(self, files: list[File]):
         embeddings = []
         for file in files:
-            embedding = Embedding.create(
-                input=file.content, engine="text-embedding-ada-002", max_tokens=8000
-            )
+            embedding = self.openai_client.embeddings.create(input=file.content, engine="text-embedding-ada-002", max_tokens=8000)
             embeddings.append(
                 {"path": file.path, "name": file.name, "embedding": embedding}
             )
@@ -64,13 +63,11 @@ class Memory:
         df.to_csv(session_memory_path)
 
     def _find_nearest_paths(self, prompt: str, k: int = 4):
-        prompt_embedding = Embedding.create(
-            input=prompt, engine="text-embedding-ada-002", max_tokens=8000
-        )
+        prompt_embedding = self.openai_client.embeddings.create(input=prompt, engine="text-embedding-ada-002", max_tokens=8000)
         df = pd.read_csv(session_memory_path)
         df["embedding"] = df.embedding.apply(eval).apply(np.array)
         df["similarity"] = df.embedding.apply(
-            lambda x: Embedding.cosine_similarity(x, prompt_embedding)
+            lambda x: self.openai_client.embeddings.cosine_similarity(x, prompt_embedding)
         )
         return df.sort_values("similarity", ascending=False).head(k).path.tolist()
 
@@ -78,24 +75,22 @@ class Memory:
         self.chat_messages.pop(0)
 
     def _create_memory_prompt(self):
-        response = Completion.create(
-            model="text-curie-001",
-            prompt=self._memory_context(),
-            max_tokens=256,
-            temperature=0,
-        )
+        response = self.openai_client.completions.create(model="davinci-002",
+        prompt=self._memory_context(),
+        max_tokens=256,
+        temperature=0)
 
         return response.choices[0].text.strip()
 
     def _memory_context(self):
         messages = [message["content"] for message in self.chat_messages[-5:]]
 
-        is_overflow = is_token_overflow("; ".join(messages), model="gpt-3.5-turbo")
+        is_overflow = is_token_overflow("; ".join(messages), model="gpt-4")
         while is_overflow:
             messages.pop(0)
             is_overflow = is_token_overflow(
                 "; ".join(messages),
-                model="gpt-3.5-turbo",
+                model="gpt-4",
             )
 
         message_history = "; ".join(messages)
