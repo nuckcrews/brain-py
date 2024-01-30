@@ -17,12 +17,6 @@
         socket.emit('setup_demo');
       });
 
-      socket.on('chat', function (msg, cb) {
-        $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
-        if (cb)
-          cb();
-      });
-
       socket.on('bot_chat_started', function (msg) {
         $('#log').append('<br>' + $('<div/>').text('Bot: ').html());
       })
@@ -38,6 +32,11 @@
       socket.on('added_memory', function (msg) {
         $('#log').append('<br>' + $('<div/>').text('Memory: ' + msg.data).html());
       })
+
+      $('form#key').submit(function (event) {
+        socket.emit('setup', { client_key: $('input[name=client_key]').val() });
+        return false;
+      });
 
       $('form#chat').submit(function (event) {
         const message = $('input[name=chat_data]').val();
@@ -56,10 +55,17 @@
 
 <body>
   <h1>Brain Server Demo</h1>
+  <form id="key" method="POST" action="#">
+    <input type="text" name="client_key">
+    <input type="submit" value="Set Key">
+  </form>
+  <br>
+  <br>
   <form id="chat" method="POST" action="#">
     <input type="text" name="chat_data">
     <input type="submit" value="Chat">
   </form>
+  <br>
   <form id="memory" method="POST" action="#">
     <input type="text" name="memory_data">
     <input type="submit" value="Add Memory">

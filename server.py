@@ -66,16 +66,6 @@ def setup(data):
     emit("setup", {"data": "Brain setup complete"})
 
 
-@socketio.on("setup_demo")
-def setup_demo():
-    client_key = os.environ.get("OPENAI_API_KEY")
-    print("Setting up brain with client key: " + client_key)
-    if not client_key:
-        raise missing_param("client_key is required")
-    brain.setup(client_key)
-    emit("client_setup", {"data": "Brain setup complete"})
-
-
 @socketio.on("new_chat")
 def new_chat(data):
     message = data.get("message")

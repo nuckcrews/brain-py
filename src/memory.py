@@ -59,8 +59,16 @@ class Memory:
                 {"path": file.path, "name": file.name, "embedding": embedding}
             )
 
-        df = pd.DataFrame(embeddings, columns=["path", "name", "embedding"])
-        df.to_csv(session_memory_path)
+        new_df = pd.DataFrame(embeddings, columns=["path", "name", "embedding"])
+        try:
+            existing_df = pd.read_csv(session_memory_path)
+            frames = [existing_df, new_df]
+            df = pd.concat(frames)
+            df.to_csv(session_memory_path)
+        except FileNotFoundError:
+            new_df.to_csv(session_memory_path)
+        except pd.errors.EmptyDataError:
+            new_df.to_csv(session_memory_path)
 
     def _find_nearest_paths(self, prompt: str, k: int = 4):
         try:
