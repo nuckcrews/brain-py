@@ -82,8 +82,11 @@ def new_chat(data):
 @socketio.on("new_memory")
 def new_memory(data):
     memory = data.get("memory")
-    brain.remember(memory)
-    emit("added_memory", {"data": "New memory added: " + memory})
+    try:
+        brain.remember(memory)
+        emit("added_memory", {"data": "New memory added: " + memory})
+    except Exception as e:
+        emit("error", {"data": str(e)})
 
 
 def serve_production():

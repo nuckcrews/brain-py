@@ -33,6 +33,10 @@
         $('#log').append('<br>' + $('<div/>').text('Memory: ' + msg.data).html());
       })
 
+      socket.on('error', function (msg) {
+        $('#log').append('<br>' + $('<div/>').text('Error: ' + msg.data).html());
+      })
+
       $('form#key').submit(function (event) {
         socket.emit('setup', { client_key: $('input[name=client_key]').val() });
         return false;

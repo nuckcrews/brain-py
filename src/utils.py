@@ -102,11 +102,14 @@ def llm_json(obj: any):
 
 encoding_4 = tiktoken.encoding_for_model("gpt-4")
 encoding_3_5 = tiktoken.encoding_for_model("gpt-3.5-turbo")
+encoding_embedding = tiktoken.encoding_for_model("text-embedding-ada-002")
 
 
 def num_tokens(content: str, model="gpt-4"):
     if model == "gpt-3.5-turbo":
         encoding = encoding_3_5
+    elif model == "text-embedding-3-small":
+        encoding = encoding_embedding
     else:
         encoding = encoding_4
 
@@ -116,6 +119,8 @@ def num_tokens(content: str, model="gpt-4"):
 def is_token_overflow(content: str, model="gpt-4"):
     if model == "gpt-3.5-turbo":
         max_tokens = 3900
+    elif model == "text-embedding-3-small":
+        max_tokens = 8190
     else:
         max_tokens = 8000
     return num_tokens(content, model=model) > max_tokens

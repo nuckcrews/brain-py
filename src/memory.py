@@ -20,7 +20,7 @@ class Memory:
         files_paths = self._find_nearest_paths(memory_prompt)
         content = "\n\n-----\n".join(
             [Extractor(path).extract()[0].content for path in files_paths]
-        )
+        )[:20000]
         content_message = {"role": "user", "content": f"Content:\n\n{content}"}
 
         new_context = [self.system_message, content_message, *self.chat_messages]
@@ -85,7 +85,8 @@ class Memory:
             return []
 
     def _remove_earliest_chat(self):
-        self.chat_messages.pop(0)
+        if len(self.chat_messages) > 0:
+            self.chat_messages.pop(0)
 
     def _create_memory_prompt(self):
         response = self.openai_client.completions.create(model="davinci-002",
