@@ -1,11 +1,13 @@
+import os
 from .utils import announce, prompt_list, prompt_string
 from src import Brain
 
 def main():
+    os.system("clear")
     announce("WELCOME TO YOUR BRAIN")
 
     brain = Brain()
-    
+
     while True:
         action = prompt_list(
             "What would you like to do?",
