@@ -31,6 +31,8 @@ If you don’t have Python installed, [install it from here](https://www.python.
    $ cp .env.example .env
    ```
 
+6. Add your OpenAI API key to the newly created .env file
+
 ## CLI
 
 1. Run the application
