@@ -1,3 +1,4 @@
+import uuid
 import pandas as pd
 import numpy as np
 from openai import OpenAI
@@ -7,7 +8,7 @@ from .utils import is_token_overflow, cosine_similarity
 __all__ = ["Memory"]
 
 session_memory_path = ".memory/session.csv"
-
+memory_storage_path = ".memory/storage"
 
 class Memory:
     def __init__(self, system_prompt: str, openai_client: OpenAI):
@@ -111,3 +112,39 @@ class Memory:
 
         setup_message = "Write a short prompt for a semantic file search query based on the need of the latest chat message. Output only the prompt."
         return setup_message + f"\n\nMessages:\n\n{message_history}\n\nPrompt:"
+
+    def list_memories(self):
+        try:
+            df = pd.read_csv(session_memory_path)
+            return df.path.tolist()
+        except FileNotFoundError:
+            return []
+        except pd.errors.EmptyDataError:
+            return []
+
+    def remove_memory(self, path):
+        try:
+            df = pd.read_csv(session_memory_path)
+            df = df[df.path != path]
+            df.to_csv(session_memory_path)
+        except FileNotFoundError:
+            pass
+        except pd.errors.EmptyDataError:
+            pass
+
+    def clear_memories(self):
+        try:
+            df = pd.read_csv(session_memory_path)
+            df = df[0:0]
+            df.to_csv(session_memory_path)
+        except FileNotFoundError:
+            pass
+        except pd.errors.EmptyDataError:
+            pass
+
+    def clear_chat(self):
+        self.chat_messages = []
+
+    def save_chat(self):
+        df = pd.DataFrame(self.chat_messages)
+        df.to_csv(f"{memory_storage_path}/{uuid.uuid4()}.csv")

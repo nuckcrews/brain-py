@@ -27,5 +27,8 @@ class Brain:
     def remember(self, memory):
         self._memory.add_memory(memory)
 
+    def forget(self, memory):
+        self._memory.remove_memory(memory)
+
     def list_memories(self):
-        return []
+        return self._memory.list_memories()

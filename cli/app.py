@@ -11,7 +11,7 @@ def main():
     while True:
         action = prompt_list(
             "What would you like to do?",
-            ["Chat", "Add a new memory", "View memories", "Exit"],
+            ["Chat", "Add a new memory", "View memories", "Remove memory", "Exit"],
         )
 
         if action == "Exit":
@@ -38,4 +38,17 @@ def main():
                 announce("Your memories are:")
                 for memory in memories:
                     announce(memory)
+                continue
+
+        elif action == "Remove memory":
+            path = prompt_list(
+                "What is the path to the memory?",
+                brain.list_memories(),
+            )
+            try:
+                brain.forget(path)
+                announce("Memory removed.")
+                continue
+            except Exception as e:
+                print(f"Error: {e}")
                 continue
