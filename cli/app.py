@@ -18,7 +18,7 @@ def main():
             return
 
         elif action == "Chat":
-            prompt = prompt_string("What would you like to say?")
+            prompt = prompt_string("You:")
             brain.chat(prompt)
 
         elif action == "Add a new memory":
