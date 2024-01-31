@@ -121,6 +121,8 @@ class Memory:
             return []
         except pd.errors.EmptyDataError:
             return []
+        except Exception as e:
+            return []
 
     def remove_memory(self, path):
         try:

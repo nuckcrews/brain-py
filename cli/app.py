@@ -41,10 +41,16 @@ def main():
                 continue
 
         elif action == "Remove memory":
+            memories = brain.list_memories()
+            if len(memories) == 0:
+                announce("You have no memories.")
+                continue
             path = prompt_list(
                 "What is the path to the memory?",
-                brain.list_memories(),
+                memories + ["Cancel"],
             )
+            if path == "Cancel":
+                continue
             try:
                 brain.forget(path)
                 announce("Memory removed.")
