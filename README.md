@@ -1,5 +1,7 @@
 # Brain - Python Library
 
+An LLM powered chat app that gets smarter the more knowledge you provide it.
+
 ## Setup
 
 If you don’t have Python installed, [install it from here](https://www.python.org/downloads/).
