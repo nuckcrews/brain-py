@@ -11,12 +11,20 @@ session_memory_path = ".memory/session.csv"
 memory_storage_path = ".memory/storage"
 
 class Memory:
+    """
+    The Memory class is responsible for managing the context of the chat and the memory of the system.
+    """
+
     def __init__(self, system_prompt: str, openai_client: OpenAI):
         self.system_message = {"role": "system", "content": system_prompt}
         self.chat_messages = []
         self.openai_client = openai_client
 
     def context(self):
+        """
+        Gets the context of the chat
+        """
+
         memory_prompt = self._create_memory_prompt()
         files_paths = self._find_nearest_paths(memory_prompt)
         content = "\n\n-----\n".join(
@@ -43,12 +51,21 @@ class Memory:
         return new_context
 
     def add_chat(self, chat_message):
+        """
+        Adds a chat message to the chat
+        """
         self.chat_messages.append({"role": "user", "content": chat_message})
 
     def add_bot_chat(self, bot_chat_message):
+        """
+        Adds a chat message from the bot to the chat
+        """
         self.chat_messages.append({"role": "assistant", "content": bot_chat_message})
 
     def add_memory(self, path):
+        """
+        Adds a memory to the system
+        """
         memories = Extractor(path).extract()
         self._embed(memories)
 
@@ -114,6 +131,9 @@ class Memory:
         return setup_message + f"\n\nMessages:\n\n{message_history}\n\nPrompt:"
 
     def list_memories(self):
+        """
+        Lists the memories in the system
+        """
         try:
             df = pd.read_csv(session_memory_path)
             return df.path.tolist()
@@ -125,6 +145,9 @@ class Memory:
             return []
 
     def remove_memory(self, path):
+        """
+        Removes a memory from the system
+        """
         try:
             df = pd.read_csv(session_memory_path)
             df = df[df.path != path]
@@ -135,6 +158,9 @@ class Memory:
             pass
 
     def clear_memories(self):
+        """
+        Clears all the memories in the system
+        """
         try:
             df = pd.read_csv(session_memory_path)
             df = df[0:0]
@@ -145,8 +171,14 @@ class Memory:
             pass
 
     def clear_chat(self):
+        """
+        Clears the chat
+        """
         self.chat_messages = []
 
     def save_chat(self):
+        """
+        Saves the chat to a file
+        """
         df = pd.DataFrame(self.chat_messages)
         df.to_csv(f"{memory_storage_path}/{uuid.uuid4()}.csv")
