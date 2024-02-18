@@ -11,7 +11,7 @@ class Brain:
         self._client = OpenAI()
         client_key = os.getenv("OPENAI_API_KEY")
         if client_key:
-            self._client.api_key = os.getenv("OPENAI_API_KEY")
+            self._client.api_key = client_key
         self._memory = Memory(
             "You are a highly intelligent brain. Respond to the user based on the content from the files and websites in your memory. Users can also add these resources to your memory.",
             self._client
